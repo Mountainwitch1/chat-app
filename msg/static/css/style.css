@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#chat-container {
+    width: 500px;
+    margin: 0 auto;
+}
+
+#messages {
+    height: 400px;
+    overflow-y: scroll;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+#user-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}

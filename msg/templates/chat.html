@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Welcome to the Chat Room, {{ username }}!</h1>
+
+    <div id="messages"></div>
+
+    <textarea id="messageInput" placeholder="Type your message here"></textarea>
+    <button id="sendButton">Send</button>
+
+    <button><a href="{{ url_for('logout') }}">Logout</a></button>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Listen for messages from the server
+        socket.on('message', function(msg) {
+            var messageElement = document.createElement('p');
+            // Format the message to include the username and timestamp
+            messageElement.innerHTML = '<strong>' + msg.username + ':</strong> ' + msg.message + ' <em>(' + msg.timestamp + ')</em>';
+            document.getElementById('messages').appendChild(messageElement);
+        });
+
+        // Send message when the user clicks the "Send" button
+        document.getElementById('sendButton').onclick = function() {
+            var message = document.getElementById('messageInput').value;
+            socket.send(message);
+            document.getElementById('messageInput').value = '';  // Clear the input field
+        };
+    </script>
+</body>
+</html>
