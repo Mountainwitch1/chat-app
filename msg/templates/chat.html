@@ -3,36 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Chat Room</title>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 </head>
 <body>
-    <h1>Welcome to the Chat Room, {{ username }}!</h1>
+    <h2>Welcome, {{ username }}!</h2>
+    <h3>Chat Room</h3>
 
-    <div id="messages"></div>
+    <div id="chat-messages">
+        {% for message in messages %}
+            <p><strong>{{ message.user }}</strong> ({{ message.timestamp.strftime("%H:%M:%S") }}): {{ message.content }}</p>
+        {% endfor %}
+    </div>
 
-    <textarea id="messageInput" placeholder="Type your message here"></textarea>
-    <button id="sendButton">Send</button>
-
-    <button><a href="{{ url_for('logout') }}">Logout</a></button>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type a message..." required />
+        <button type="submit">Send</button>
+    </form>
 
     <script>
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var socket = io();
 
-        // Listen for messages from the server
-        socket.on('message', function(msg) {
-            var messageElement = document.createElement('p');
-            // Format the message to include the username and timestamp
-            messageElement.innerHTML = '<strong>' + msg.username + ':</strong> ' + msg.message + ' <em>(' + msg.timestamp + ')</em>';
-            document.getElementById('messages').appendChild(messageElement);
+        // Handle new message
+        socket.on('receive_message', function(data) {
+            let messageDiv = document.createElement("div");
+            messageDiv.innerHTML = `<strong>${data.user}</strong> (${data.timestamp}): ${data.message}`;
+            document.getElementById('chat-messages').appendChild(messageDiv);
         });
 
-        // Send message when the user clicks the "Send" button
-        document.getElementById('sendButton').onclick = function() {
-            var message = document.getElementById('messageInput').value;
-            socket.send(message);
-            document.getElementById('messageInput').value = '';  // Clear the input field
-        };
+        // Handle notifications for new messages
+        socket.on('new_message_notification', function(data) {
+            if (document.hidden) {
+                new Notification('New Message from ' + data.user, {
+                    body: data.message,
+                    icon: '/static/icon.png'
+                });
+            }
+        });
+
+        document.getElementById('message-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var message = document.getElementById('message-input').value;
+            socket.emit('send_message', { 'message': message });
+            document.getElementById('message-input').value = '';
+        });
     </script>
 </body>
 </html>
